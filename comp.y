@@ -9,6 +9,13 @@ extern int yylineno;
 extern char* yytext;
 %}
 
+%right '='
+%left '<' '>'
+%left '+' '-'
+%left '*' '/' '%'
+%left '&' '|'
+%right '!' '~'
+
 %union {
   int x;
   float f;
@@ -19,8 +26,9 @@ extern char* yytext;
 %token <s> IDENTIFIER
 %token LBRACE RBRACE LPAREN RPAREN
 
-%token <x> ICONST FCONST STRCONST CHARCONST
-%type <x> expr F
+%token <x> ICONST
+%token <f> FCONST
+%token <c> CHARCONST
 
 
 %token AUTO	DOUBLE	INT	STRUCT
@@ -40,16 +48,36 @@ S : fn S
   ;
 
 stmts: stmt stmts
-  | stmt;
+  | stmt
+  | '{' stmts '}'
+  ;
+
 
 stmt : assignstmt
   | declstmt
   | retstmt
   | BREAK ';'
   | CONTINUE ';'
+  | loopstmt
   ;
 
-assignstmt: IDENTIFIER '=' expr ';' { printf("MOV %s, %d", $1, $3); }
+loopstmt: WHILE '(' expr ')' '{' stmts '}'
+  | FOR '(' assignstmt ';' expr ';' expr ')' '{' stmts '}'
+  | DO '{' stmts '}' '(' expr ')' ';'
+  ;
+
+assignop: '='
+  | '+' '='
+  | '-' '='
+  | '*' '='
+  | '/' '='
+  | '%' '='
+  | '&' '='
+  | '|' '='
+  | '~' '='
+
+
+assignstmt: IDENTIFIER assignop expr ';'
 
 declstmt: dtype decllist ';'
   ;
@@ -69,14 +97,45 @@ decllist: IDENTIFIER ',' decllist
 
 fn: dtype IDENTIFIER '(' ')' '{' stmts '}'
 
-retstmt: RETURN IDENTIFIER ';'
-  | RETURN ICONST ';'
-
-expr : expr '+' F { $$ = $1 + $3; }
-  | F { $$ = $1; }
+retstmt: RETURN expr ';'
+  | RETURN ';'
   ;
-F : F '*' ICONST { $$ = $1 * $3; }
-  | ICONST { $$ = $1; }
+
+constant: ICONST
+  | FCONST
+  | CHARCONST
+  ;
+
+expr : arithmetic_expr
+  | binary_expr
+  | logical_expr
+  | '(' expr ')'
+  | IDENTIFIER
+  | constant
+  ;
+  
+arithmetic_expr: expr '+' expr
+  | expr '-' expr
+  | expr '*' expr
+  | expr '/' expr
+  | expr '%' expr
+  ;
+  
+binary_expr: expr '&' expr
+  | expr '|' expr
+  | expr '^' expr
+  | '~' expr
+  ;
+
+logical_expr: '!' expr 
+  | expr '&' '&' expr
+  | expr '|' '|' expr
+  | expr '=' '=' expr
+  | expr '!' '=' expr
+  | expr '>' expr
+  | expr '>' '=' expr
+  | expr '<' expr
+  | expr '<' '=' expr
   ;
 %%
 
