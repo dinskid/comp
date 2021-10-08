@@ -75,7 +75,7 @@ assignop: '='
   | '&' '='
   | '|' '='
   | '~' '='
-
+  ;
 
 assignstmt: IDENTIFIER assignop expr ';'
 
