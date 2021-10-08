@@ -83,7 +83,7 @@ assignstmt: IDENTIFIER assignop expr ';' {
   struct astnode* temp = mkNode();
   char code[100];
   // printf("%s\n", $2);
-  if ($1[0] == '=') {
+  if ($2[0] == '=') {
     sprintf(code, "%s := %s", temp->place, $3->place);
   } else {
     sprintf(code, "%s := %s %c %s", temp->place, temp->place, $2[0], $3->place);
