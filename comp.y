@@ -66,7 +66,7 @@ stmt : assignstmt
 
 loopstmt: WHILE '(' expr ')' '{' stmts '}'
   | FOR '(' assignstmt ';' expr ';' expr ')' '{' stmts '}'
-  | DO '{' stmts '}' '(' expr ')' ';'
+  | DO '{' stmts '}' WHILE '(' expr ')' ';'
   ;
 
 assignop: EQ {
