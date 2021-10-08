@@ -7,3 +7,22 @@ dtype: INT
   | VOID
   ;
 
+%type  <ast> declstmt
+
+%token <f> FCONST
+%token <c> CHARCONST
+
+  | expr '-' expr
+  | expr '*' expr
+  | expr '/' expr
+  | expr '%' expr
+
+
+
+  | '-' '='
+  | '*' '='
+  | '/' '='
+  | '%' '='
+  | '&' '='
+  | '|' '='
+  | '~' '='

@@ -3,6 +3,7 @@
   #include <stdlib.h>
   #include <string.h>
   #include "y.tab.h"
+  #include "tac.h"
 
   void yyerror(char*);
 %}
@@ -48,8 +49,16 @@ ws [ \t\n\v\f]
 "while" { return WHILE; }
 
 
-{digit}+ { yylval.x = atoi(yytext); return ICONST; }
+{digit}+ { yylval.val = makeIntConstant(yytext); return ICONST; }
 {letter}+({letter}|{digit})* {  yylval.s = strdup(yytext); return IDENTIFIER; }
+"=" { 
+  yylval.s = strdup(yytext);
+  return EQ; 
+  }
+"+=" {
+   yylval.s = strdup(yytext);
+    return PLUS_EQ; 
+   }
 [~!%^&*()-+={};:'",<.>/?] {  return yytext[0]; }
 {ws}* { ; }
 . { 

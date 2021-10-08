@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "tac.h"
 
 extern int yylex();
 void yyerror(char*);
@@ -17,26 +19,27 @@ extern char* yytext;
 %right '!' '~'
 
 %union {
-  int x;
-  float f;
   char* s;
-  char c;
+  struct astnode* ast;
+  struct constantnode* val;
 }
 
-%token <s> IDENTIFIER
+%token <s> IDENTIFIER PLUS_EQ EQ
 %token LBRACE RBRACE LPAREN RPAREN
 
-%token <x> ICONST
-%token <f> FCONST
-%token <c> CHARCONST
 
+%type  <s>   assignop
+%type  <ast> expr arithmetic_expr binary_expr logical_expr assignstmt
+%type  <val> constant
+%token <val> ICONST FCONST CHARCONST
+%token <ast> INT CHAR UNSIGNED FLOAT DOUBLE SHORT VOID LONG
 
-%token AUTO	DOUBLE	INT	STRUCT
-%token BREAK	ELSE	LONG	SWITCH
+%token AUTO	STRUCT
+%token BREAK	ELSE	SWITCH
 %token CASE	ENUM	REGISTER	TYPEDEF
-%token CHAR	EXTERN	RETURN	UNION
-%token CONST	FLOAT	SHORT	UNSIGNED
-%token CONTINUE	FOR	SIGNED	VOID
+%token EXTERN	RETURN	UNION
+%token CONST	
+%token CONTINUE	FOR	SIGNED
 %token DEFAULT	GOTO	SIZEOF	VOLATILE
 %token DO	IF	STATIC	WHILE
 
@@ -66,18 +69,29 @@ loopstmt: WHILE '(' expr ')' '{' stmts '}'
   | DO '{' stmts '}' '(' expr ')' ';'
   ;
 
-assignop: '='
-  | '+' '='
-  | '-' '='
-  | '*' '='
-  | '/' '='
-  | '%' '='
-  | '&' '='
-  | '|' '='
-  | '~' '='
+assignop: EQ {
+    $$ = $1;
+  }
+  | PLUS_EQ {
+    // printf("+= from yacc: %s\n", $1);
+    $$ = $1;
+  }
   ;
 
-assignstmt: IDENTIFIER assignop expr ';'
+assignstmt: IDENTIFIER assignop expr ';' {
+  // printf("assignop from assignstmt: %s\n", $2);
+  struct astnode* temp = mkNode();
+  char code[100];
+  // printf("%s\n", $2);
+  if ($1[0] == '=') {
+    sprintf(code, "%s := %s", temp->place, $3->place);
+  } else {
+    sprintf(code, "%s := %s %c %s", temp->place, temp->place, $2[0], $3->place);
+  }
+  printf("%s\n", code);
+  temp->tac = strdup(code);
+  $$ = temp;
+}
 
 declstmt: dtype decllist ';'
   ;
@@ -101,33 +115,58 @@ retstmt: RETURN expr ';'
   | RETURN ';'
   ;
 
-constant: ICONST
-  | FCONST
-  | CHARCONST
+constant: ICONST {
+    $$ = $1;
+  }
+  | FCONST {
+    $$ = $1;
+  }
+  | CHARCONST {
+    $$ = $1;
+  }
   ;
 
-expr : arithmetic_expr
-  | binary_expr
-  | logical_expr
-  | '(' expr ')'
-  | IDENTIFIER
-  | constant
+expr: arithmetic_expr { $$ = $1; }
+  | binary_expr { $$ = $1; }
+  | logical_expr { $$ = $1; }
+  | '(' expr ')' { $$ = $2; }
+  | IDENTIFIER { $$ = mkNode(); }
+  | constant {
+    struct astnode* temp = mkNode();
+    char code[100];
+    sprintf(code, "%s := %d", temp->place, $1->x);
+    temp->tac = strdup(code);
+    // sprintf(temp->tac, code, $1->x);
+    $$ = temp;
+    printf("%s\n", $$->tac);
+  }
   ;
   
-arithmetic_expr: expr '+' expr
-  | expr '-' expr
-  | expr '*' expr
-  | expr '/' expr
-  | expr '%' expr
+arithmetic_expr: expr '+' expr {
+    struct astnode* temp = mkNode();
+    // char* code = "%s := %s + %s";
+    // sprintf(temp->tac, code, temp->place, $1->tac, $3->tac);
+    $$ = temp;
+  }
   ;
   
 binary_expr: expr '&' expr
   | expr '|' expr
   | expr '^' expr
-  | '~' expr
+  | '~' expr {
+    struct astnode* temp = mkNode();
+    char* code = "%s := ~%s";
+    sprintf(temp->tac, code, temp->place, $2->place);
+    $$ = temp;
+  }
   ;
 
-logical_expr: '!' expr 
+logical_expr: '!' expr {
+    struct astnode* temp = mkNode();
+    char* code = "%s := ! %s";
+    sprintf(temp->tac, code, temp->place, $2->place);
+    $$ = temp;
+  }
   | expr '&' '&' expr
   | expr '|' '|' expr
   | expr '=' '=' expr
