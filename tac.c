@@ -29,6 +29,8 @@ Constant* makeIntConstant(char* num)
   c->size = 4; // integer is of 4 bytes
   // printf("value: %d\n", c->x);
   // printf("end makeIntConstant\n");
+  char* s = "int";
+  c->type = strdup(s);
   return c;
 }
 
@@ -39,6 +41,14 @@ Node* mkNode()
   sprintf(s, "t%d", current_temp_var++);
   temp->place = strdup(s);
   dbg("mkNode", temp->place);
+  return temp;
+}
+
+IdentifierList* makeIdentifier(char* id)
+{
+  IdentifierList* temp = (IdentifierList*)malloc(sizeof(IdentifierList));
+  temp->name = strdup(id);
+  temp->next = NULL;
   return temp;
 }
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tac.h"
+#include "utils.c"
 
 extern int yylex();
 void yyerror(char*);
@@ -19,21 +20,24 @@ extern char* yytext;
 %right '!' '~'
 
 %union {
-  char* s;
-  struct astnode* ast;
-  struct constantnode* val;
+  char* s; // use this when some string is to be stored
+  struct idlistnode* idlist; // use this to store identifiers (as linked list)
+  struct astnode* ast; // use this to store any internal nodes
+  struct constantnode* val; // use this to store any constant
 }
 
-%token <s> IDENTIFIER PLUS_EQ EQ
-%token LBRACE RBRACE LPAREN RPAREN
+%token <s> INT CHAR UNSIGNED FLOAT DOUBLE SHORT VOID LONG PLUS_EQ EQ
+%type  <s>   assignop dtype
 
+%token <idlist> IDENTIFIER 
+%type  <idlist> decllist
 
-%type  <s>   assignop
 %type  <ast> expr arithmetic_expr binary_expr logical_expr assignstmt
-%type  <val> constant
-%token <val> ICONST FCONST CHARCONST
-%token <ast> INT CHAR UNSIGNED FLOAT DOUBLE SHORT VOID LONG
 
+%token <val> ICONST FCONST CHARCONST
+%type  <val> constant
+
+%token LBRACE RBRACE LPAREN RPAREN
 %token AUTO	STRUCT
 %token BREAK	ELSE	SWITCH
 %token CASE	ENUM	REGISTER	TYPEDEF
@@ -79,21 +83,30 @@ assignop: EQ {
   ;
 
 assignstmt: IDENTIFIER assignop expr ';' {
-  // printf("assignop from assignstmt: %s\n", $2);
+  checkType($1->type, $3->type);
   struct astnode* temp = mkNode();
   char code[100];
-  // printf("%s\n", $2);
   if ($2[0] == '=') {
     sprintf(code, "%s := %s", temp->place, $3->place);
   } else {
     sprintf(code, "%s := %s %c %s", temp->place, temp->place, $2[0], $3->place);
   }
   printf("%s\n", code);
+  printf("%s := %s\n", $1->name, temp->place);
   temp->tac = strdup(code);
   $$ = temp;
 }
 
-declstmt: dtype decllist ';'
+declstmt: dtype decllist ';' {
+    printf("Type: %s\n", $1);
+    IdentifierList* cur = $2;
+    while (cur != NULL) {
+      cur->type = strdup($1);
+      printf("%s->", cur->type);
+      cur = cur->next;
+    }
+    printf("null\n");
+  }
   ;
 
 dtype: INT
@@ -105,8 +118,13 @@ dtype: INT
   | VOID
   ;
 
-decllist: IDENTIFIER ',' decllist
-  | IDENTIFIER
+decllist: IDENTIFIER ',' decllist {
+    $1->next = $3;
+    $$ = $1;
+  }
+  | IDENTIFIER {
+    $$ = $1;
+  }
   ;
 
 fn: dtype IDENTIFIER '(' ')' '{' stmts '}'
@@ -136,6 +154,8 @@ expr: arithmetic_expr { $$ = $1; }
     char code[100];
     sprintf(code, "%s := %d", temp->place, $1->x);
     temp->tac = strdup(code);
+    printf("Type of constant: %s\n", $1->type);
+    temp->type = $1->type;
     // sprintf(temp->tac, code, $1->x);
     $$ = temp;
     printf("%s\n", $$->tac);
@@ -143,9 +163,11 @@ expr: arithmetic_expr { $$ = $1; }
   ;
   
 arithmetic_expr: expr '+' expr {
+    checkType($1->type, $3->type);
     struct astnode* temp = mkNode();
-    // char* code = "%s := %s + %s";
-    // sprintf(temp->tac, code, temp->place, $1->tac, $3->tac);
+    char code[100];
+    sprintf(code, "%s := %s + %s", temp->place, $1->place, $3->place);
+    temp->tac = strdup(code);
     $$ = temp;
   }
   ;

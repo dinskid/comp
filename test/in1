@@ -1,6 +1,8 @@
-int x;
+int x, y, z;
 
 int main() {
+  char q;
+  q = 10;
   while (0) {
     x += 10;
   }

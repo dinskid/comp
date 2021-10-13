@@ -1,6 +1,15 @@
 // Three address code
 
-typedef struct constantnode {
+// enum types {
+//   INT,
+//   CHAR,
+//   FLOAT,
+//   LONG,
+//   VOID,
+// };
+
+typedef struct constantnode
+{
   union
   {
     int x;
@@ -8,12 +17,29 @@ typedef struct constantnode {
     char c;
   };
   int size; // currently Idk what for, maybe it would be useful later
+  char *type;
 } Constant;
 
-typedef struct astnode {
-  char* place;
-  char* tac; // three address code
+typedef struct astnode
+{
+  char *type;
+  char *place;
+  char *tac; // three address code
 } Node;
 
-Constant* makeIntConstant(char*);
-Node* mkNode(void);
+typedef struct idlistnode
+{
+  char *type;
+  char *name;
+  int size;
+  // add symbol table entry later if required
+  struct idlistnode *next;
+} IdentifierList;
+
+typedef struct constantnode Constant;
+typedef struct astnode Node;
+typedef struct idlistnode IdentifierList;
+
+Constant *makeIntConstant(char *);
+Node *mkNode(void);
+IdentifierList *makeIdentifier(char *);

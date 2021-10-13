@@ -18,7 +18,7 @@ ws [ \t\n\v\f]
   /* list of keywords */
 "auto" { return AUTO; }
 "double" { return DOUBLE; }
-"int" {  return INT; }
+"int" {  char* s = "int"; yylval.s = strdup(s); return INT; }
 "struct" { return STRUCT; }
 "break" { return BREAK; }
 "else" { return ELSE; }
@@ -28,7 +28,7 @@ ws [ \t\n\v\f]
 "enum" { return ENUM; }
 "register" { return REGISTER; }
 "typedef" { return TYPEDEF; }
-"char" { return CHAR; }
+"char" { char* s = "char"; yylval.s = strdup(s); return CHAR; }
 "extern" { return EXTERN; }
 "return" { return RETURN; }
 "union" { return UNION; }
@@ -50,7 +50,7 @@ ws [ \t\n\v\f]
 
 
 {digit}+ { yylval.val = makeIntConstant(yytext); return ICONST; }
-{letter}+({letter}|{digit})* {  yylval.s = strdup(yytext); return IDENTIFIER; }
+{letter}+({letter}|{digit})* {  yylval.idlist = makeIdentifier(yytext); return IDENTIFIER; }
 "=" { 
   yylval.s = strdup(yytext);
   return EQ; 
