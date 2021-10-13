@@ -83,7 +83,7 @@ assignop: EQ {
   ;
 
 assignstmt: IDENTIFIER assignop expr ';' {
-  checkType($1->type, $3->type);
+  checkType(($1->node)->type, $3->type);
   struct astnode* temp = mkNode();
   char code[100];
   if ($2[0] == '=') {
@@ -92,20 +92,22 @@ assignstmt: IDENTIFIER assignop expr ';' {
     sprintf(code, "%s := %s %c %s", temp->place, temp->place, $2[0], $3->place);
   }
   printf("%s\n", code);
-  printf("%s := %s\n", $1->name, temp->place);
+  printf("%s := %s\n", ($1->node)->name, temp->place);
   temp->tac = strdup(code);
   $$ = temp;
 }
 
 declstmt: dtype decllist ';' {
-    printf("Type: %s\n", $1);
+    // printf("Type: %s\n", $1);
+    // fflush(stdout);
     IdentifierList* cur = $2;
     while (cur != NULL) {
-      cur->type = strdup($1);
-      printf("%s->", cur->type);
+      (cur->node)->type = strdup($1);
+      // printf("%s->", (cur->node)->type);
+      // fflush(stdout);
       cur = cur->next;
     }
-    printf("null\n");
+    // printf("null\n");
   }
   ;
 
@@ -154,7 +156,7 @@ expr: arithmetic_expr { $$ = $1; }
     char code[100];
     sprintf(code, "%s := %d", temp->place, $1->x);
     temp->tac = strdup(code);
-    printf("Type of constant: %s\n", $1->type);
+    // printf("Type of constant: %s\n", $1->type);
     temp->type = $1->type;
     // sprintf(temp->tac, code, $1->x);
     $$ = temp;
@@ -201,11 +203,13 @@ logical_expr: '!' expr {
 %%
 
 void yyerror(char* s) {
-  fprintf(stderr, "Error: %s\n\nLine number: %d\nToken: %s\n", s, yylineno, yytext);
+  fprintf(stderr, "Error: %s\n\nLine number: %d\nNear token: %s\n", s, yylineno, yytext);
   exit(1);
 }
 
 int main(void) { 
+  printf("Initialising stack\n");
+  initSymbolTable(1000000);
   printf("In here!\n");
   yyparse();
   printf("Parsing over\n");

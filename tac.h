@@ -7,6 +7,27 @@
 //   LONG,
 //   VOID,
 // };
+typedef struct symboltablenode
+{
+  char *type;
+  char *name;
+  int size;
+} STNode;
+
+typedef struct symboltable
+{
+  int size;
+  STNode *table;
+} STable;
+
+// typedef struct symboltablestack {
+//   STable* stack;
+//   int top, size;
+// } STStack;
+
+void initSymbolTable(int);
+int insert(STNode);
+int find(STNode);
 
 typedef struct constantnode
 {
@@ -29,9 +50,7 @@ typedef struct astnode
 
 typedef struct idlistnode
 {
-  char *type;
-  char *name;
-  int size;
+  struct symboltablenode *node;
   // add symbol table entry later if required
   struct idlistnode *next;
 } IdentifierList;
