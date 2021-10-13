@@ -119,16 +119,11 @@ assignstmt: IDENTIFIER assignop expr ';' {
 }
 
 declstmt: dtype decllist ';' {
-    // printf("Type: %s\n", $1);
-    // fflush(stdout);
     IdentifierList* cur = $2;
     while (cur != NULL) {
       (cur->node)->type = strdup($1);
-      // printf("%s->", (cur->node)->type);
-      // fflush(stdout);
       cur = cur->next;
     }
-    // printf("null\n");
   }
   ;
 
@@ -167,7 +162,9 @@ constant: ICONST {
   }
   ;
 
-expr: arithmetic_expr { $$ = $1; }
+expr: arithmetic_expr { $$ = $1; 
+    printf("%s\n", $$->tac);
+  }
   | binary_expr { $$ = $1; }
   | logical_expr { $$ = $1; }
   | '(' expr ')' { $$ = $2; }
@@ -190,36 +187,30 @@ expr: arithmetic_expr { $$ = $1; }
   ;
   
 arithmetic_expr: expr '+' expr {
-    genTwoOperand($$, $1, "-", $3);
-    // checkType($1->type, $3->type);
-    // struct astnode* temp = mkNode();
-    // char code[100];
-    // sprintf(code, "%s := %s + %s", temp->place, $1->place, $3->place);
-    // temp->tac = strdup(code);
-    // $$ = temp;
+    $$ = genTwoOperand($$, $1, "+", $3);
   }
-  |expr '-' expr {
-    genTwoOperand($$, $1, "-", $3);
+  | expr '-' expr {
+    $$ = genTwoOperand($$, $1, "-", $3);
   }
   | expr '*' expr {
-    genTwoOperand($$, $1, "*", $3);
+    $$ = genTwoOperand($$, $1, "*", $3);
   }
   | expr '/' expr {
-    genTwoOperand($$, $1, "/", $3);
+    $$ = genTwoOperand($$, $1, "/", $3);
   }
   | expr '%' expr {
-    genTwoOperand($$, $1, "%", $3);
+    $$ = genTwoOperand($$, $1, "%", $3);
   }
   ;
   
 binary_expr: expr '&' expr {
-    genTwoOperand($$, $1, "&", $3);
+    $$ = genTwoOperand($$, $1, "&", $3);
   }
   | expr '|' expr {
-    genTwoOperand($$, $1, "|", $3);
+    $$ = genTwoOperand($$, $1, "|", $3);
   }
   | expr '^' expr {
-    genTwoOperand($$, $1, "^", $3);
+    $$ = genTwoOperand($$, $1, "^", $3);
   }
   | '~' expr {
     struct astnode* temp = mkNode();
@@ -236,28 +227,28 @@ logical_expr: '!' expr {
     $$ = temp;
   }
   | expr '&' '&' expr {
-    genTwoOperand($$, $1, "&&", $4);
+    $$ = genTwoOperand($$, $1, "&&", $4);
   }
   | expr '|' '|' expr {
-    genTwoOperand($$, $1, "||", $4);
+    $$ = genTwoOperand($$, $1, "||", $4);
   }
   | expr '=' '=' expr {
-    genTwoOperand($$, $1, "==", $4);
+    $$ = genTwoOperand($$, $1, "==", $4);
   }
   | expr '!' '=' expr {
-    genTwoOperand($$, $1, "!=", $4);
+    $$ = genTwoOperand($$, $1, "!=", $4);
   }
   | expr '>' expr {
-    genTwoOperand($$, $1, ">", $3);
+    $$ = genTwoOperand($$, $1, ">", $3);
   }
   | expr '>' '=' expr {
-    genTwoOperand($$, $1, ">=", $4);
+    $$ = genTwoOperand($$, $1, ">=", $4);
   }
   | expr '<' expr {
-    genTwoOperand($$, $1, "<", $3);
+    $$ = genTwoOperand($$, $1, "<", $3);
   }
   | expr '<' '=' expr {
-    genTwoOperand($$, $1, "<=", $4);
+    $$ = genTwoOperand($$, $1, "<=", $4);
   }
   ;
 %%

@@ -65,6 +65,6 @@ Constant *makeIntConstant(char *);
 Node *mkNode(void);
 IdentifierList *makeIdentifier(char *);
 
-void genTwoOperand(struct astnode *, struct astnode *, char *, struct astnode *);
+struct astnode *genTwoOperand(struct astnode *, struct astnode *, char *, struct astnode *);
 
 #endif // TAC

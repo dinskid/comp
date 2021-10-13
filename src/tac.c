@@ -68,14 +68,15 @@ IdentifierList *makeIdentifier(char *id)
   return idlist;
 }
 
-void genTwoOperand(struct astnode *dst, struct astnode *src1, char *op, struct astnode *src2)
+struct astnode *genTwoOperand(struct astnode *dst, struct astnode *src1, char *op, struct astnode *src2)
 {
   checkType(src1->type, src2->type);
   struct astnode *temp = mkNode();
   char code[100];
   sprintf(code, "%s := %s %s %s", temp->place, src1->place, op, src2->place);
   temp->tac = strdup(code);
-  dst = temp;
+  temp->type = strdup(src1->type);
+  return temp;
 }
 
 // SYMBOL TABLE
