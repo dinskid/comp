@@ -1,10 +1,3 @@
-  /* assignment operators */
-"="  { return ASSIGN; }
-"+="  { return PLUSEQ; }
-"-="  { return MINUSEQ; }
-"*="  { return STAREQ; }
-"/="  { return FSLASHEQ; }
-"%="  { return MODEQ; }
 "<<="  { return LSHIFTEQ; }
 "=>>"  { return RSHIFTEQ; }
 "&="  { return ANDbEQ; }

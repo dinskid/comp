@@ -6,6 +6,11 @@
   #include "tac.h"
 
   void yyerror(char*);
+
+  #define MAKE_OP(OP) {\
+    yylval.s = strdup(yytext);\
+    return OP;\
+  };
 %}
 
 digit [0-9]
@@ -51,15 +56,18 @@ ws [ \t\n\v\f]
 
 {digit}+ { yylval.val = makeIntConstant(yytext); return ICONST; }
 {letter}+({letter}|{digit})* {  yylval.idlist = makeIdentifier(yytext); return IDENTIFIER; }
-"=" { 
-  yylval.s = strdup(yytext);
-  return EQ; 
-  }
-"+=" {
-   yylval.s = strdup(yytext);
-    return PLUS_EQ; 
-   }
-[~!%^&*()-+={};:'",<.>/?] {  return yytext[0]; }
+  /* assignment operators */
+"="  MAKE_OP(EQ);
+"+=" MAKE_OP(PLUS_EQ);
+"-=" MAKE_OP(MINUS_EQ);
+"*=" MAKE_OP(STAR_EQ);
+"/=" MAKE_OP(SLASH_EQ);
+"%=" MAKE_OP(MOD_EQ);
+"&=" MAKE_OP(AND_EQ)
+"|=" MAKE_OP(OR_EQ)
+"^=" MAKE_OP(XOR_EQ)
+[~!%^&*()-+={};:'",<.>/?|] {  return yytext[0]; }
+"-"  { yylval.s = "-"; return yytext[0]; } // don't know why - isn't recognised by above
 {ws}* { ; }
 . { 
   char* err;

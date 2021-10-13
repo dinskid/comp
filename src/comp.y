@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tac.h"
-#include "utils.c"
+#include "utils.h"
 
 extern int yylex();
 void yyerror(char*);
@@ -26,8 +26,9 @@ extern char* yytext;
   struct constantnode* val; // use this to store any constant
 }
 
+%token <s> MINUS_EQ STAR_EQ SLASH_EQ MOD_EQ AND_EQ OR_EQ XOR_EQ
 %token <s> INT CHAR UNSIGNED FLOAT DOUBLE SHORT VOID LONG PLUS_EQ EQ
-%type  <s>   assignop dtype
+%type  <s> assignop dtype
 
 %token <idlist> IDENTIFIER 
 %type  <idlist> decllist
@@ -77,7 +78,27 @@ assignop: EQ {
     $$ = $1;
   }
   | PLUS_EQ {
-    // printf("+= from yacc: %s\n", $1);
+    $$ = $1;
+  }
+  | MINUS_EQ {
+    $$ = $1;
+  }
+  | STAR_EQ {
+    $$ = $1;
+  }
+  | SLASH_EQ {
+    $$ = $1;
+  }
+  | MOD_EQ {
+    $$ = $1;
+  }
+  | AND_EQ {
+    $$ = $1;
+  }
+  | OR_EQ {
+    $$ = $1;
+  }
+  | XOR_EQ {
     $$ = $1;
   }
   ;
@@ -150,7 +171,11 @@ expr: arithmetic_expr { $$ = $1; }
   | binary_expr { $$ = $1; }
   | logical_expr { $$ = $1; }
   | '(' expr ')' { $$ = $2; }
-  | IDENTIFIER { $$ = mkNode(); }
+  | IDENTIFIER {
+    struct astnode* temp = mkNode();
+    temp->type = strdup(($1->node)->type);
+    $$ = temp;
+  }
   | constant {
     struct astnode* temp = mkNode();
     char code[100];
@@ -165,18 +190,37 @@ expr: arithmetic_expr { $$ = $1; }
   ;
   
 arithmetic_expr: expr '+' expr {
-    checkType($1->type, $3->type);
-    struct astnode* temp = mkNode();
-    char code[100];
-    sprintf(code, "%s := %s + %s", temp->place, $1->place, $3->place);
-    temp->tac = strdup(code);
-    $$ = temp;
+    genTwoOperand($$, $1, "-", $3);
+    // checkType($1->type, $3->type);
+    // struct astnode* temp = mkNode();
+    // char code[100];
+    // sprintf(code, "%s := %s + %s", temp->place, $1->place, $3->place);
+    // temp->tac = strdup(code);
+    // $$ = temp;
+  }
+  |expr '-' expr {
+    genTwoOperand($$, $1, "-", $3);
+  }
+  | expr '*' expr {
+    genTwoOperand($$, $1, "*", $3);
+  }
+  | expr '/' expr {
+    genTwoOperand($$, $1, "/", $3);
+  }
+  | expr '%' expr {
+    genTwoOperand($$, $1, "%", $3);
   }
   ;
   
-binary_expr: expr '&' expr
-  | expr '|' expr
-  | expr '^' expr
+binary_expr: expr '&' expr {
+    genTwoOperand($$, $1, "&", $3);
+  }
+  | expr '|' expr {
+    genTwoOperand($$, $1, "|", $3);
+  }
+  | expr '^' expr {
+    genTwoOperand($$, $1, "^", $3);
+  }
   | '~' expr {
     struct astnode* temp = mkNode();
     char* code = "%s := ~%s";
@@ -191,14 +235,30 @@ logical_expr: '!' expr {
     sprintf(temp->tac, code, temp->place, $2->place);
     $$ = temp;
   }
-  | expr '&' '&' expr
-  | expr '|' '|' expr
-  | expr '=' '=' expr
-  | expr '!' '=' expr
-  | expr '>' expr
-  | expr '>' '=' expr
-  | expr '<' expr
-  | expr '<' '=' expr
+  | expr '&' '&' expr {
+    genTwoOperand($$, $1, "&&", $4);
+  }
+  | expr '|' '|' expr {
+    genTwoOperand($$, $1, "||", $4);
+  }
+  | expr '=' '=' expr {
+    genTwoOperand($$, $1, "==", $4);
+  }
+  | expr '!' '=' expr {
+    genTwoOperand($$, $1, "!=", $4);
+  }
+  | expr '>' expr {
+    genTwoOperand($$, $1, ">", $3);
+  }
+  | expr '>' '=' expr {
+    genTwoOperand($$, $1, ">=", $4);
+  }
+  | expr '<' expr {
+    genTwoOperand($$, $1, "<", $3);
+  }
+  | expr '<' '=' expr {
+    genTwoOperand($$, $1, "<=", $4);
+  }
   ;
 %%
 

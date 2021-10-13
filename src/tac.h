@@ -1,3 +1,5 @@
+#ifndef TAC
+#define TAC
 // Three address code
 
 // enum types {
@@ -62,3 +64,7 @@ typedef struct idlistnode IdentifierList;
 Constant *makeIntConstant(char *);
 Node *mkNode(void);
 IdentifierList *makeIdentifier(char *);
+
+void genTwoOperand(struct astnode *, struct astnode *, char *, struct astnode *);
+
+#endif // TAC
