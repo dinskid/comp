@@ -33,7 +33,8 @@ extern char* yytext;
 %token <idlist> IDENTIFIER 
 %type  <idlist> decllist
 
-%type  <ast> expr arithmetic_expr binary_expr logical_expr assignstmt
+%type  <ast> expr arithmetic_expr binary_expr logical_expr assignstmt stmts stmt
+%type  <ast> loopstmt
 
 %token <val> ICONST FCONST CHARCONST
 %type  <val> constant
@@ -55,21 +56,53 @@ S : fn S
   | declstmt
   ;
 
-stmts: stmt stmts
-  | stmt
-  | '{' stmts '}'
+stmts: stmt stmts {
+    Node* temp = (Node*)malloc(sizeof(Node));
+    temp->type = "void";
+    temp->tac = append(2, $1->tac, $2->tac);
+    $$ = temp;
+    // struct statmentsnode* temp = (statmentsnode*)malloc(sizeof(statmentsnode));
+    // temp->node = $1;
+    // temp->next = $2;
+    // $$ = temp;
+  }
+  | stmt {
+    // statments will have type void
+    Node* temp = (Node*)malloc(sizeof(Node));
+    temp->type = "void";
+    temp->tac = strdup($1->tac);
+    $$ = temp;
+    // struct statmentsnode* temp = (statmentsnode*)malloc(sizeof(statmentsnode));
+    // temp->node = $1;
+    // temp->next = NULL;
+    // $$ = temp;
+  }
+  | '{' stmts '}' {
+    $$ = $2;
+  }
   ;
 
 
-stmt : assignstmt
+stmt : assignstmt {
+    $$ = $1;
+  }
   | declstmt
   | retstmt
   | BREAK ';'
   | CONTINUE ';'
-  | loopstmt
+  | loopstmt {
+    $$ = $1;
+  }
   ;
 
-loopstmt: WHILE '(' expr ')' '{' stmts '}'
+loopstmt: WHILE '(' expr ')' '{' stmts '}' {
+    Node* temp = (Node*)malloc(sizeof(Node));
+    temp->type = "void";
+
+    char *label = "L0001:\n", *goTo = "goto L0001\n";
+    temp->tac = append(4, label, $3->tac, $6->tac, goTo);
+    $$ = temp;
+  }
   | FOR '(' assignstmt ';' expr ';' expr ')' '{' stmts '}'
   | DO '{' stmts '}' WHILE '(' expr ')' ';'
   ;
@@ -108,13 +141,13 @@ assignstmt: IDENTIFIER assignop expr ';' {
   struct astnode* temp = mkNode();
   char code[100];
   if ($2[0] == '=') {
-    sprintf(code, "%s := %s", temp->place, $3->place);
+    sprintf(code, "%s := %s\n", temp->place, $3->place);
   } else {
-    sprintf(code, "%s := %s %c %s", temp->place, temp->place, $2[0], $3->place);
+    sprintf(code, "%s := %s %c %s\n", temp->place, temp->place, $2[0], $3->place);
   }
-  printf("%s\n", code);
-  printf("%s := %s\n", ($1->node)->name, temp->place);
-  temp->tac = strdup(code);
+  char code1[100];
+  sprintf(code1, "%s := %s\n", ($1->node)->name, temp->place);
+  temp->tac = append(3, $3->tac, code, code1);
   $$ = temp;
 }
 
@@ -145,7 +178,16 @@ decllist: IDENTIFIER ',' decllist {
   }
   ;
 
-fn: dtype IDENTIFIER '(' ')' '{' stmts '}'
+fn: dtype IDENTIFIER '(' ')' '{' stmts '}' {
+    // genTacForFn
+    printf("%s", $6->tac);
+    // TAC for fns
+    // printf("lab%s\n", ($2->node)->name);
+    // struct statmentsnode* cur = $6;
+    // while (cur != NULL) {
+    // }
+  }
+  ;
 
 retstmt: RETURN expr ';'
   | RETURN ';'
@@ -163,7 +205,7 @@ constant: ICONST {
   ;
 
 expr: arithmetic_expr { $$ = $1; 
-    printf("%s\n", $$->tac);
+    // printf("%s\n", $$->tac);
   }
   | binary_expr { $$ = $1; }
   | logical_expr { $$ = $1; }
@@ -176,13 +218,12 @@ expr: arithmetic_expr { $$ = $1;
   | constant {
     struct astnode* temp = mkNode();
     char code[100];
-    sprintf(code, "%s := %d", temp->place, $1->x);
+    sprintf(code, "%s := %d\n", temp->place, $1->x);
     temp->tac = strdup(code);
     // printf("Type of constant: %s\n", $1->type);
     temp->type = $1->type;
     // sprintf(temp->tac, code, $1->x);
     $$ = temp;
-    printf("%s\n", $$->tac);
   }
   ;
   

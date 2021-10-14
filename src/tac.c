@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 // #include "symboltable.h"
 #include "tac.h"
 #include "utils.h"
@@ -77,6 +78,30 @@ struct astnode *genTwoOperand(struct astnode *dst, struct astnode *src1, char *o
   temp->tac = strdup(code);
   temp->type = strdup(src1->type);
   return temp;
+}
+
+char *append(int len, ...)
+{
+  va_list codes;
+  char *str = (char *)malloc(10000);
+  if (str == NULL)
+  {
+    printf("Ran out of memory");
+    exit(1);
+  }
+  va_start(codes, len);
+  char j = 0;
+  for (int i = 0; i < len; i++)
+  {
+    char *cur = va_arg(codes, char *);
+    while (cur != NULL && *cur != '\0')
+    {
+      str[j++] = *cur++;
+    }
+  }
+  va_end(codes);
+  str[j] = '\0';
+  return strdup(str);
 }
 
 // SYMBOL TABLE
