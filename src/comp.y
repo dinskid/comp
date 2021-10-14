@@ -59,23 +59,27 @@ S : fn S
 stmts: stmt stmts {
     Node* temp = (Node*)malloc(sizeof(Node));
     temp->type = "void";
-    temp->tac = append(2, $1->tac, $2->tac);
+    if ($1->tac != NULL)
+      temp->tac = append(2, $1->tac, $2->tac);
+    else {
+      char *msg = "yet to implement\n";
+      temp->tac = append(2, msg, $2->tac);
+    }
     $$ = temp;
-    // struct statmentsnode* temp = (statmentsnode*)malloc(sizeof(statmentsnode));
-    // temp->node = $1;
-    // temp->next = $2;
-    // $$ = temp;
   }
   | stmt {
     // statments will have type void
     Node* temp = (Node*)malloc(sizeof(Node));
     temp->type = "void";
-    temp->tac = strdup($1->tac);
+
+    // suppress segfaults whenever tac isn't finished
+    if ($1->tac != NULL) temp->tac = strdup($1->tac);
+    else {
+      char *msg = "yet to implement\n";
+      temp->tac = strdup(msg);
+    }
+
     $$ = temp;
-    // struct statmentsnode* temp = (statmentsnode*)malloc(sizeof(statmentsnode));
-    // temp->node = $1;
-    // temp->next = NULL;
-    // $$ = temp;
   }
   | '{' stmts '}' {
     $$ = $2;
@@ -181,11 +185,6 @@ decllist: IDENTIFIER ',' decllist {
 fn: dtype IDENTIFIER '(' ')' '{' stmts '}' {
     // genTacForFn
     printf("%s", $6->tac);
-    // TAC for fns
-    // printf("lab%s\n", ($2->node)->name);
-    // struct statmentsnode* cur = $6;
-    // while (cur != NULL) {
-    // }
   }
   ;
 
@@ -204,15 +203,16 @@ constant: ICONST {
   }
   ;
 
-expr: arithmetic_expr { $$ = $1; 
-    // printf("%s\n", $$->tac);
-  }
+expr: arithmetic_expr { $$ = $1; }
   | binary_expr { $$ = $1; }
   | logical_expr { $$ = $1; }
   | '(' expr ')' { $$ = $2; }
   | IDENTIFIER {
     struct astnode* temp = mkNode();
     temp->type = strdup(($1->node)->type);
+    char code[100];
+    sprintf(code, "%s := %s\n", temp->place, ($1->node)->name);
+    temp->tac = strdup(code);
     $$ = temp;
   }
   | constant {
@@ -220,9 +220,7 @@ expr: arithmetic_expr { $$ = $1;
     char code[100];
     sprintf(code, "%s := %d\n", temp->place, $1->x);
     temp->tac = strdup(code);
-    // printf("Type of constant: %s\n", $1->type);
     temp->type = $1->type;
-    // sprintf(temp->tac, code, $1->x);
     $$ = temp;
   }
   ;

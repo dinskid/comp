@@ -73,9 +73,11 @@ struct astnode *genTwoOperand(struct astnode *dst, struct astnode *src1, char *o
 {
   checkType(src1->type, src2->type);
   struct astnode *temp = mkNode();
-  char code[100];
-  sprintf(code, "%s := %s %s %s", temp->place, src1->place, op, src2->place);
-  temp->tac = strdup(code);
+  char code[100] = {'\0'};
+  sprintf(code, "%s := %s %s %s\n", temp->place, src1->place, op, src2->place);
+  // printf("\n\ncode: %s\n\n", code);
+  temp->tac = append(3, src1->tac, src2->tac, code);
+  // printf("\n\ntac: %s\n\n", temp->tac);
   temp->type = strdup(src1->type);
   return temp;
 }
@@ -83,14 +85,26 @@ struct astnode *genTwoOperand(struct astnode *dst, struct astnode *src1, char *o
 char *append(int len, ...)
 {
   va_list codes;
-  char *str = (char *)malloc(10000);
+
+  int SIZE = 0;
+  va_start(codes, len);
+  for (int i = 0; i < len; i++)
+  {
+    SIZE += strlen(va_arg(codes, char *));
+  }
+  va_end(codes);
+
+  char *str = (char *)malloc(SIZE + 17); // just some extra space
   if (str == NULL)
   {
     printf("Ran out of memory");
     exit(1);
   }
+  memset(str, '\0', sizeof str);
   va_start(codes, len);
-  char j = 0;
+  int j = 0;
+  // printf("----------------------------start");
+  // printf("----------------------------\n");
   for (int i = 0; i < len; i++)
   {
     char *cur = va_arg(codes, char *);
@@ -98,10 +112,18 @@ char *append(int len, ...)
     {
       str[j++] = *cur++;
     }
+    // printf("%s\n-----------------------------------------\n", str);
   }
+  // printf("----------------------------end");
+  // printf("----------------------------\n");
   va_end(codes);
   str[j] = '\0';
-  return strdup(str);
+  // printf("from gencode: %s\n\n", str);
+  // printf("end gencode\n\n\n");
+  // fflush(stdout);
+  char *retval = strdup(str);
+  free(str);
+  return retval;
 }
 
 // SYMBOL TABLE
