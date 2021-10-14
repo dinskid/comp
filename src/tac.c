@@ -39,6 +39,26 @@ Constant *makeIntConstant(char *num)
   c->type = strdup(s);
   return c;
 }
+Constant *makeCharConstant(char *text)
+{
+  Constant *ch = mkConstNode();
+  ch->c = text[0];
+  ch->size = 1;
+
+  char *s = "char";
+  ch->type = strdup(s);
+  return ch;
+}
+
+Constant *makeFloatConstant(char *decimal)
+{
+  Constant *fl = mkConstNode();
+  fl->f = atof(decimal);
+  fl->size = 8;
+  char *s = "float";
+  fl->type = strdup(s);
+  return fl;
+}
 
 Node *mkNode()
 {
