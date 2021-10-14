@@ -1,0 +1,8 @@
+int a;
+
+int main() {
+  int q;
+  a = q || 10;
+  return 0;
+}
+
