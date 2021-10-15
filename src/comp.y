@@ -253,8 +253,10 @@ binary_expr: expr '&' expr {
   }
   | '~' expr {
     struct astnode* temp = mkNode();
-    char* code = "%s := ~%s";
-    sprintf(temp->tac, code, temp->place, $2->place);
+    char code[100];
+    sprintf(code, "%s := ~%s\n", temp->place, $2->place);
+    temp->tac = strdup(code);
+    temp->type = strdup($2->type);
     $$ = temp;
   }
   ;
