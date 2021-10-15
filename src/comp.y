@@ -151,20 +151,21 @@ assignop: EQ {
   ;
 
 assignstmt: IDENTIFIER assignop expr ';' {
-  checkDeclared($1->node);
-  checkType(($1->node)->type, $3->type);
-  struct astnode* temp = mkNode();
-  char code[100];
-  if ($2[0] == '=') {
-    sprintf(code, "%s := %s\n", temp->place, $3->place);
-  } else {
-    sprintf(code, "%s := %s %c %s\n", temp->place, temp->place, $2[0], $3->place);
+    checkDeclared($1->node);
+    checkType(($1->node)->type, $3->type);
+    struct astnode* temp = mkNode();
+    char code[100];
+    if ($2[0] == '=') {
+      sprintf(code, "%s := %s\n", temp->place, $3->place);
+    } else {
+      sprintf(code, "%s := %s %c %s\n", temp->place, temp->place, $2[0], $3->place);
+    }
+    char code1[100];
+    sprintf(code1, "%s := %s\n", ($1->node)->name, temp->place);
+    temp->tac = append(3, $3->tac, code, code1);
+    $$ = temp;
   }
-  char code1[100];
-  sprintf(code1, "%s := %s\n", ($1->node)->name, temp->place);
-  temp->tac = append(3, $3->tac, code, code1);
-  $$ = temp;
-}
+  ;
 
 declstmt: dtype decllist ';' {
     IdentifierList* cur = $2;
