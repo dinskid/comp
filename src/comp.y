@@ -18,6 +18,7 @@ extern char* yytext;
 %left '*' '/' '%'
 %left '&' '|' '^'
 %right '!' '~'
+%nonassoc UMINUS
 
 %union {
   char* s; // use this when some string is to be stored
@@ -232,7 +233,15 @@ expr: arithmetic_expr { $$ = $1; }
     char code[100];
     sprintf(code, "%s := %d\n", temp->place, $1->x);
     temp->tac = strdup(code);
-    temp->type = $1->type;
+    temp->type = strdup($1->type);
+    $$ = temp;
+  }
+  | '-' expr %prec UMINUS {
+    struct astnode* temp = mkNode();
+    char code[100];
+    sprintf(code, "%s := -%s\n", temp->place, $2->place);
+    temp->tac = strdup(code);
+    temp->type = strdup($2->type);
     $$ = temp;
   }
   ;

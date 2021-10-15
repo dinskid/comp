@@ -1,0 +1,13 @@
+int x, y, z;
+
+int main() {
+  int q;
+  q = 10;
+  // test for unary minus
+  q = q + -1 + -q * 100;
+  while (0) {
+    x += 10;
+  }
+  return 0;
+}
+

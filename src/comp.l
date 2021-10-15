@@ -59,8 +59,8 @@ ws [ \t\n\v\f]
 "while" { return WHILE; }
 
 
-{digit}+ { yylval.val = makeIntConstant(yytext); return ICONST; }
-{digit}+"."{digit}+ {yylval.val = makeFloatConstant(yytext); return FCONST;}
+(\+|-)?{digit}+ { yylval.val = makeIntConstant(yytext); return ICONST; }
+(\+|-)?{digit}+"."{digit}+ {yylval.val = makeFloatConstant(yytext); return FCONST;}
 "'"{letter}"'" {yylval.val = makeCharConstant(yytext); return CHARCONST;}
 {letter}+({letter}|{digit})* {  yylval.idlist = makeIdentifier(yytext); return IDENTIFIER; }
   /* assignment operators */
