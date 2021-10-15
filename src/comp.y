@@ -151,6 +151,7 @@ assignop: EQ {
   ;
 
 assignstmt: IDENTIFIER assignop expr ';' {
+  checkDeclared($1->node);
   checkType(($1->node)->type, $3->type);
   struct astnode* temp = mkNode();
   char code[100];
@@ -273,8 +274,10 @@ binary_expr: expr '&' expr {
 
 logical_expr: '!' expr {
     struct astnode* temp = mkNode();
-    char* code = "%s := ! %s";
-    sprintf(temp->tac, code, temp->place, $2->place);
+    char code[100];
+    sprintf(code, "%s := !%s\n", temp->place, $2->place);
+    temp->tac = strdup(code);
+    temp->type = strdup($2->type);
     $$ = temp;
   }
   | expr '&' '&' expr {
