@@ -103,8 +103,17 @@ loopstmt: WHILE '(' expr ')' '{' stmts '}' {
     Node* temp = (Node*)malloc(sizeof(Node));
     temp->type = "void";
 
-    char *label = "L0001:\n", *goTo = "goto L0001\n";
-    temp->tac = append(4, label, $3->tac, $6->tac, goTo);
+    char *label = makeLabel();
+    char *loopout = makeEndLabel(label);
+
+    char *entry = append(2, label, ":\n");
+    char *exit = append(5, "goto ", label, "\n", loopout, ":\n");
+
+    char code[100];
+    sprintf(code, "if %s <= 0; goto %s\n", $3->place, loopout);
+    char* boostrapCode = strdup(code);
+
+    temp->tac = append(5, entry, $3->tac, boostrapCode, $6->tac, exit);
     $$ = temp;
   }
   | FOR '(' assignstmt ';' expr ';' expr ')' '{' stmts '}'

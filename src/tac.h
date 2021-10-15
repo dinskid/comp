@@ -66,6 +66,8 @@ Constant *makeCharConstant(char *);
 Constant *makeFloatConstant(char *);
 Node *mkNode(void);
 IdentifierList *makeIdentifier(char *);
+char *makeLabel(void);
+char *makeEndLabel(char *);
 
 struct astnode *genTwoOperand(struct astnode *, struct astnode *, char *, struct astnode *);
 char *append(int, ...);

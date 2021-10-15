@@ -6,8 +6,6 @@
 #include "tac.h"
 #include "utils.h"
 
-STable st;
-
 void debug(char *location, char *s)
 {
   printf("from %s: %s\n", location, s);
@@ -20,8 +18,14 @@ void debug(char *location, char *s)
 #define dbg(...)
 #endif
 
-int current_temp_var = 0;
+// GLOBALS
 
+STable st;
+int current_temp_var = 0, current_label = 0;
+
+// END GLOBALS
+
+// CONSTRUCTORS
 Constant *mkConstNode()
 {
   return (Constant *)malloc(sizeof(Constant));
@@ -89,6 +93,24 @@ IdentifierList *makeIdentifier(char *id)
   return idlist;
 }
 
+char *makeLabel()
+{
+  char label[100];
+  sprintf(label, "L%d", current_label++);
+  return strdup(label);
+}
+
+char *makeEndLabel(char *label)
+{
+  char lab[100];
+  sprintf(lab, "OUT_%s", label);
+  return strdup(lab);
+}
+
+// END CONSTRUCTORS
+
+// TAC
+
 struct astnode *genTwoOperand(struct astnode *dst, struct astnode *src1, char *op, struct astnode *src2)
 {
   checkType(src1->type, src2->type);
@@ -145,6 +167,8 @@ char *append(int len, ...)
   free(str);
   return retval;
 }
+
+// END TAC
 
 // SYMBOL TABLE
 int hash(char *s)
@@ -212,3 +236,5 @@ int find(STNode s)
              ? index
              : -1;
 }
+
+// END SYMBOL TABLE
