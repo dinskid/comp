@@ -20,6 +20,11 @@ ws [ \t\n\v\f]
 %option yylineno
 
 %%
+  /* single line comment */
+"//".* ;
+  /* multi line comment */
+"/*"(.|\n)*"*/" ;
+
   /* list of keywords */
 "auto" { return AUTO; }
 "double" { return DOUBLE; }
