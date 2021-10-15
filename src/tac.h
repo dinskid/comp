@@ -62,6 +62,8 @@ typedef struct astnode Node;
 typedef struct idlistnode IdentifierList;
 
 Constant *makeIntConstant(char *);
+Constant *makeCharConstant(char *);
+Constant *makeFloatConstant(char *);
 Node *mkNode(void);
 IdentifierList *makeIdentifier(char *);
 
