@@ -57,6 +57,8 @@ ws [ \t\n\v\f]
 "do" { return DO; }
 "static" { return STATIC; }
 "while" { return WHILE; }
+"if" { return IF; }
+"else" { return ELSE; }
 
 
 (\+|-)?{digit}+ { yylval.val = makeIntConstant(yytext); return ICONST; }

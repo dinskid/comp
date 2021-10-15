@@ -36,7 +36,7 @@ extern char* yytext;
 %type  <idlist> decllist
 
 %type  <ast> expr arithmetic_expr binary_expr logical_expr assignstmt stmts stmt
-%type  <ast> loopstmt
+%type  <ast> loopstmt ifstmt
 
 %token <val> ICONST FCONST CHARCONST
 %type  <val> constant
@@ -89,7 +89,7 @@ stmts: stmt stmts {
   ;
 
 
-stmt : assignstmt {
+stmt: assignstmt {
     $$ = $1;
   }
   | declstmt
@@ -98,6 +98,56 @@ stmt : assignstmt {
   | CONTINUE ';'
   | loopstmt {
     $$ = $1;
+  }
+  | ifstmt
+  ;
+
+ifstmt: IF '(' expr ')' '{' stmts '}' {
+    Node *temp = mkNode();
+    temp->type = "void";
+
+    char *label = makeLabel(); // to exit
+
+    char code[100];
+    sprintf(code, "if %s != 0; goto %s\n", $3->place, label);
+    char exit[100];
+    sprintf(exit, "%s:\n", label);
+    temp->tac = append(4, $3->tac, code, $6->tac, exit);
+    $$ = temp;
+  }
+  | IF '(' expr ')' '{' stmts '}' ELSE '{' stmts '}' {
+    Node *temp = mkNode();
+    temp->type = "void";
+
+    char *elseLabel = makeLabel(), *fiLabel = makeLabel();
+
+    char code[100];
+    sprintf(code, "if %s != 0; goto %s\n", $3->place, elseLabel);
+    char iftoend[100];
+    sprintf(iftoend, "goto %s\n", fiLabel);
+    char elseCode[100];
+    sprintf(elseCode, "%s:\n", elseLabel);
+    char exit[100];
+    sprintf(exit, "%s:\n", fiLabel);
+    temp->tac = append(7, $3->tac, code, $6->tac, iftoend, elseCode, $10->tac, exit);
+    $$ = temp;
+  }
+  | IF '(' expr ')' '{' stmts '}' ELSE stmt {
+    Node *temp = mkNode();
+    temp->type = "void";
+
+    char *elseLabel = makeLabel(), *fiLabel = makeLabel();
+
+    char code[100];
+    sprintf(code, "if %s != 0; goto %s\n", $3->place, elseLabel);
+    char iftoend[100];
+    sprintf(iftoend, "goto %s\n", fiLabel);
+    char elseCode[100];
+    sprintf(elseCode, "%s:\n", elseLabel);
+    char exit[100];
+    sprintf(exit, "%s:\n", fiLabel);
+    temp->tac = append(7, $3->tac, code, $6->tac, iftoend, elseCode, $9->tac, exit);
+    $$ = temp;
   }
   ;
 
