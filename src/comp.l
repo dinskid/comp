@@ -73,7 +73,14 @@ ws [ \t\n\v\f]
 "&=" MAKE_OP(AND_EQ)
 "|=" MAKE_OP(OR_EQ)
 "^=" MAKE_OP(XOR_EQ)
+  /* RelOps: EQUALITY NEQ LT LE GT GE */
 "==" MAKE_OP(EQUALITY)
+"!=" MAKE_OP(NEQ)
+"<"  MAKE_OP(LT)
+"<=" MAKE_OP(LE)
+">"  MAKE_OP(GT)
+">=" MAKE_OP(GE)
+
 [~!%^&*()-+={};:'",<.>/?|] {  return yytext[0]; }
 "-"  { yylval.s = "-"; return yytext[0]; } // don't know why - isn't recognised by above
 {ws}* { ; }

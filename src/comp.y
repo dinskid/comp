@@ -12,11 +12,11 @@ extern int yylineno;
 extern char* yytext;
 %}
 
-%right '='
-%left '<' '>'
+%right EQ // assignment has least precedence
+%left  EQUALITY NEQ LT LE GT GE
 %left '+' '-'
 %left '*' '/' '%'
-%left '&' '|'
+%left '&' '|' '^'
 %right '!' '~'
 
 %union {
@@ -26,8 +26,9 @@ extern char* yytext;
   struct constantnode* val; // use this to store any constant
 }
 
-%token <s> MINUS_EQ STAR_EQ SLASH_EQ MOD_EQ AND_EQ OR_EQ XOR_EQ EQUALITY
-%token <s> INT CHAR UNSIGNED FLOAT DOUBLE SHORT VOID LONG PLUS_EQ EQ
+%token <s> EQ MINUS_EQ STAR_EQ SLASH_EQ MOD_EQ AND_EQ OR_EQ XOR_EQ PLUS_EQ
+%token <s> EQUALITY NEQ LT LE GT GE
+%token <s> INT CHAR UNSIGNED FLOAT DOUBLE SHORT VOID LONG
 %type  <s> assignop dtype
 
 %token <idlist> IDENTIFIER 
@@ -283,38 +284,22 @@ logical_expr: '!' expr {
     $$ = genTwoOperand($$, $1, "||", $4);
   }
   | expr EQUALITY expr {
-    // Node* tacForOperation = genTwoOperand($$, $1, "==", $4);
-    Node* temp = mkNode();
-    char *label1 = makeLabel(), *outLabel = makeLabel();
-    char code[200];
-    sprintf(code,
-      "\
-if %s == %s; goto %s\n\
-%s := 0\n\
-goto %s\n\
-%s:\n\
-%s := 1\n\
-%s:\n",
-    $1->place, $3->place, label1, temp->place, outLabel, label1, temp->place, outLabel);
-    temp->tac = append(3, $1->tac, $3->tac, code);
-    temp->type = "int";
-    $$ = temp;
-    // $$ = genTwoOperand($$, $1, "==", $4);
+    $$ = genForRelOp($$, $1, "==", $3);
   }
-  | expr '!' '=' expr {
-    $$ = genTwoOperand($$, $1, "!=", $4);
+  | expr NEQ expr {
+    $$ = genForRelOp($$, $1, "!=", $3);
   }
-  | expr '>' expr {
-    $$ = genTwoOperand($$, $1, ">", $3);
+  | expr GT expr {
+    $$ = genForRelOp($$, $1, ">", $3);
   }
-  | expr '>' '=' expr {
-    $$ = genTwoOperand($$, $1, ">=", $4);
+  | expr GE expr {
+    $$ = genForRelOp($$, $1, ">=", $3);
   }
-  | expr '<' expr {
-    $$ = genTwoOperand($$, $1, "<", $3);
+  | expr LT expr {
+    $$ = genForRelOp($$, $1, "<", $3);
   }
-  | expr '<' '=' expr {
-    $$ = genTwoOperand($$, $1, "<=", $4);
+  | expr LE expr {
+    $$ = genForRelOp($$, $1, "<=", $3);
   }
   ;
 %%

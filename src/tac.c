@@ -124,6 +124,25 @@ struct astnode *genTwoOperand(struct astnode *dst, struct astnode *src1, char *o
   return temp;
 }
 
+Node *genForRelOp(Node *dst, Node *src1, char *relop, Node *src2)
+{
+  Node *temp = mkNode();
+  char *label1 = makeLabel(), *outLabel = makeLabel();
+  char code[200];
+  sprintf(code,
+          "\
+if %s %s %s; goto %s\n\
+%s := 0\n\
+goto %s\n\
+%s:\n\
+%s := 1\n\
+%s:\n",
+          src1->place, relop, src2->place, label1, temp->place, outLabel,
+          label1, temp->place, outLabel);
+  temp->tac = append(3, src1->tac, src2->tac, code);
+  temp->type = "int";
+}
+
 char *append(int len, ...)
 {
   va_list codes;

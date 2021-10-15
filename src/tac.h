@@ -70,6 +70,7 @@ char *makeLabel(void);
 char *makeEndLabel(char *);
 
 struct astnode *genTwoOperand(struct astnode *, struct astnode *, char *, struct astnode *);
+struct astnode *genForRelOp(struct astnode *, struct astnode *, char *, struct astnode *);
 char *append(int, ...);
 
 #endif // TAC
