@@ -272,6 +272,7 @@ expr: arithmetic_expr { $$ = $1; }
   | '(' expr ')' { $$ = $2; }
   | IDENTIFIER {
     struct astnode* temp = mkNode();
+    checkDeclared($1->node);
     temp->type = strdup(($1->node)->type);
     char code[100];
     sprintf(code, "%s := %s\n", temp->place, ($1->node)->name);
